@@ -1,0 +1,90 @@
+apiVersion: carbonscaler.io/v1
+kind: CarbonScalerMPIJob
+metadata:
+  name: nbody
+carbonScalerSpec:
+  minReplicas: 1
+  maxReplicas: 1
+  deadline: 1
+  progress: 0
+  profileName: "nbody100k"
+spec:
+  slotsPerWorker: 1
+  runPolicy:
+    cleanPodPolicy: Running
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+          - args:
+            - -np
+            - $(WORKERS)
+            - --allow-run-as-root
+            - -bind-to
+            - none
+            - -map-by
+            - slot
+            - -mca
+            - btl_vader_single_copy_mechanism
+            - none
+            - -mca
+            - btl
+            - ^openib
+            - elastic_nbody
+            - -b
+            - $(BODIES)
+            - -i
+            - $(ITERATIONS)
+            - -c
+            - '1'
+            - -f
+            - $(LOGS_FOLDER)
+            - -r
+            command:
+            - mpirun
+            env:
+            - name: WORKERS
+              value: '1'
+            - name: BODIES
+              value: '100000'
+            - name: 'ITERATIONS'
+              value: '1'
+            - name: 'LOGS_FOLDER'
+              value: 'results/two/'
+            image: washraf/nbody:latest
+            imagePullPolicy: IfNotPresent
+            name: mpi
+            resources:
+              limits:
+                cpu: 1
+                memory: 2Gi
+            volumeMounts:
+            - mountPath: /code/results
+              name: nfs-pv
+          volumes:
+          - name: nfs-pv
+            persistentVolumeClaim:
+              claimName: collector-pvc
+    Worker:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+          - image: washraf/nbody
+            imagePullPolicy: IfNotPresent
+            name: mpi
+            resources:
+              limits:
+                cpu: 1
+                memory: 0.5Gi
+            volumeMounts:
+            - mountPath: /code/results
+              name: nfs-pv
+          volumes:
+          - name: nfs-pv
+            persistentVolumeClaim:
+              claimName: collector-pvc

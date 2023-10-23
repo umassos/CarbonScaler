@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: power-server
+  labels:
+    app: power-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: power-server
+  template:
+    metadata:
+      labels:
+        app: power-server
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: power-server
+      containers:
+      - name: power-server
+        image: washraf/power_server
+        ports:
+        - containerPort: 6600

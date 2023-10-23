@@ -1,0 +1,12 @@
+apiVersion: carbonscaler.io/v1
+kind: CarbonScalerMPIJob
+metadata:
+  labels:
+    app.kubernetes.io/name: carbonscalermpijob
+    app.kubernetes.io/instance: carbonscalermpijob-sample
+    app.kubernetes.io/part-of: carbonscaler
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: carbonscaler
+  name: carbonscalermpijob-sample
+spec:
+  # TODO(user): Add fields here

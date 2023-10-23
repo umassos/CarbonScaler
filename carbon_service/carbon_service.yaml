@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: carbon-service-svc
+  labels:
+    run: carbon-service-svc
+spec:
+  ports:
+    - port: 80
+      targetPort: 7777
+      protocol: TCP
+  selector:
+    run: carbon-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carbon-service
+spec:
+  selector:
+    matchLabels:
+      run: carbon-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: carbon-service
+    spec:
+      volumes:
+        - name: nfs-pv
+          persistentVolumeClaim:
+            claimName: collector-pvc
+      containers:
+        - name: carbon-service
+          image: washraf/carbon-webhook:latest
+          imagePullPolicy: Always
+          args:
+            - "--carbon-path=/workspace/data-sample.csv" #Trace Location
+            - "--db-path=/nfs/reg.db" #DB used for saving subscribers to the service
+            - "--update-interval=300" # Update interval
+            - "--prediction-window=1000" # How many samples into the future.
+          ports:
+            - containerPort: 7777
+          resources:
+              limits:
+                cpu: 1
+                memory: 2Gi
+          volumeMounts:
+            - mountPath: /nfs
+              name: nfs-pv
+

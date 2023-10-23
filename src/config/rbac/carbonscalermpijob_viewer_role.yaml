@@ -1,0 +1,27 @@
+# permissions for end users to view carbonscalermpijobs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: carbonscalermpijob-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: carbonscaler
+    app.kubernetes.io/part-of: carbonscaler
+    app.kubernetes.io/managed-by: kustomize
+  name: carbonscalermpijob-viewer-role
+rules:
+- apiGroups:
+  - carbonscaler.io
+  resources:
+  - carbonscalermpijobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - carbonscaler.io
+  resources:
+  - carbonscalermpijobs/status
+  verbs:
+  - get
